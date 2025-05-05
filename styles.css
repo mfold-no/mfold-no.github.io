@@ -60,6 +60,8 @@ body::after {
 
 .coming-soon {
     color: #D9E2F7;
+    font-size: 0.7em;
+    font-weight: normal;
 }
 
 .logo {
@@ -188,3 +190,30 @@ h1 {
     margin: 20px auto;
     display: block;
 } 
+
+.links-grid {
+    
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.link-item {
+    text-align: center;
+    color: orange;
+    text-decoration: none;
+}
+
+.link-item a {
+    color: orange;
+    text-decoration: none;
+}
+
+@media (max-width: 600px) {
+    .links-grid {
+        grid-template-columns: 1fr;
+    }
+}
