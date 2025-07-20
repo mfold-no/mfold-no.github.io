@@ -186,6 +186,24 @@
       100% { text-shadow: 0 0 10px #00ff00; }
     }
 
+    .warning-blink {
+      color: #ff8800 !important;
+      animation: orangeBlink 1s ease-in-out infinite;
+      font-weight: bold;
+      text-shadow: 0 0 15px #ff8800;
+    }
+
+    @keyframes orangeBlink {
+      0%, 100% { 
+        opacity: 1; 
+        text-shadow: 0 0 15px #ff8800;
+      }
+      50% { 
+        opacity: 0.3; 
+        text-shadow: 0 0 5px #ff8800;
+      }
+    }
+
     /* Screen glitch effect */
     .glitch-effect {
       animation: glitch 0.3s ease-in-out;
@@ -558,7 +576,7 @@
       const entered = inputs.map(input => input.value).join("");
       if (entered.length === 5) {
         if (entered === correctCode) {
-          message.textContent = "KODE AKSEPTERT - WHISPER ER FRI - SPECTRA ER FANGET";
+          message.innerHTML = "KODE AKSEPTERT - WHISPER ER FRI - SPECTRA ER FANGET<br><br><br><span class='warning-blink'>SJEKK BAK DEG SARAH!</span>";
           message.className = 'success-message';
           terminal.classList.add('success-state');
           document.querySelector('h1').textContent = 'KAOSBOMBE DEAKTIVERT';
