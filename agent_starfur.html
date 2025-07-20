@@ -402,7 +402,7 @@
     const statusText = document.querySelector('.status-text');
 
     // Timer functionality (cosmetic - no actual countdown)
-    let timeDisplay = 299; // Start at 4:59
+    let timeDisplay = 600; // Start at 10:00
     function updateTimer() {
       const minutes = Math.floor(timeDisplay / 60);
       const seconds = timeDisplay % 60;
@@ -651,31 +651,49 @@
           duration = 0.6;
           break;
           
-        case 'firework_explode':
-          // Create a gentle pop sound
-          oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-          oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.4);
-          gainNode.gain.setValueAtTime(0.12, audioContext.currentTime);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
-          oscillator.type = 'triangle';
-          duration = 0.4;
+        case 'sonic_note':
+          // Play the next note in the Sonic melody sequence
+          const noteFreq = sonicMelodyNotes[currentSonicNote];
+          currentSonicNote = (currentSonicNote + 1) % sonicMelodyNotes.length;
           
-          // Add a second layer for sparkle effect
+          // Main melody note
+          oscillator.frequency.setValueAtTime(noteFreq, audioContext.currentTime);
+          gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6);
+          oscillator.type = 'square';
+          duration = 0.6;
+          
+          // Add harmonic layer (octave down for richness)
+          setTimeout(() => {
+            const harmOsc = audioContext.createOscillator();
+            const harmGain = audioContext.createGain();
+            harmOsc.connect(harmGain);
+            harmGain.connect(audioContext.destination);
+            
+            harmOsc.frequency.setValueAtTime(noteFreq / 2, audioContext.currentTime);
+            harmGain.gain.setValueAtTime(0.08, audioContext.currentTime);
+            harmGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            harmOsc.type = 'triangle';
+            
+            harmOsc.start(audioContext.currentTime);
+            harmOsc.stop(audioContext.currentTime + 0.5);
+          }, 10);
+          
+          // Add bright sparkle (octave up for that Sonic energy)
           setTimeout(() => {
             const sparkleOsc = audioContext.createOscillator();
             const sparkleGain = audioContext.createGain();
             sparkleOsc.connect(sparkleGain);
             sparkleGain.connect(audioContext.destination);
             
-            sparkleOsc.frequency.setValueAtTime(1200, audioContext.currentTime);
-            sparkleOsc.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.8);
+            sparkleOsc.frequency.setValueAtTime(noteFreq * 2, audioContext.currentTime);
             sparkleGain.gain.setValueAtTime(0.06, audioContext.currentTime);
-            sparkleGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
+            sparkleGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
             sparkleOsc.type = 'sine';
             
             sparkleOsc.start(audioContext.currentTime);
-            sparkleOsc.stop(audioContext.currentTime + 0.8);
-          }, 50);
+            sparkleOsc.stop(audioContext.currentTime + 0.4);
+          }, 30);
           break;
           
         case 'firework_whistle':
@@ -771,6 +789,35 @@
     let particles = [];
     let fireworksStarted = false;
     let frameCount = 0;
+    
+    // Sonic 1 Title Screen melody notes (Sega Megadrive)
+    const sonicMelodyNotes = [
+      554.37, // C#5
+      622.25, // D#5
+      698.46, // F5
+      830.61, // G#5
+      698.46, // F5
+      622.25, // D#5
+      554.37, // C#5
+      622.25, // D#5
+      698.46, // F5
+      622.25, // D#5
+      554.37, // C#5
+      493.88, // B4
+      554.37, // C#5
+      622.25, // D#5
+      554.37, // C#5
+      493.88, // B4
+      415.30, // G#4
+      493.88, // B4
+      554.37, // C#5
+      622.25, // D#5
+      698.46, // F5
+      830.61, // G#5
+      932.33, // A#5
+      830.61, // G#5
+    ];
+    let currentSonicNote = 0;
 
     function startConfetti() {
       // Launch multiple fireworks for success
@@ -785,27 +832,22 @@
       if (fireworksStarted) return; // Prevent multiple starts
       fireworksStarted = true;
       
-      // Poisson-style distribution for more clustering and overlap
+      // Regular, frequent firework launches for clear melody
       function scheduleNextFirework() {
-        // Exponential distribution for Poisson-like timing
-        const lambda = 2; // Average rate (fireworks per second)
-        const delay = -Math.log(Math.random()) / lambda * 1000; // Convert to milliseconds
-        const clampedDelay = Math.max(100, Math.min(delay, 2000)); // Clamp between 0.1-2 seconds
-        
         setTimeout(() => {
           launchFirework();
           scheduleNextFirework(); // Schedule the next one
-        }, clampedDelay);
+        }, 400); // Launch a firework every 400ms for clear melody
       }
       
-      // Launch multiple initial fireworks for immediate action
-      for (let i = 0; i < 3; i++) {
-        setTimeout(() => launchFirework(), i * 200);
+      // Launch multiple initial fireworks immediately
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => launchFirework(), i * 100);
       }
       
       // Start the animation loop and continuous scheduling
       requestAnimationFrame(draw);
-      scheduleNextFirework();
+      setTimeout(scheduleNextFirework, 500); // Start regular scheduling after initial burst
     }
 
     function launchFirework() {
@@ -830,8 +872,8 @@
     }
 
     function explodeFirework(fw) {
-      // Play explosion sound
-      playSound('firework_explode');
+      // Play next Sonic melody note
+      playSound('sonic_note');
       
       const particleCount = 50 + Math.random() * 50;
       for (let i = 0; i < particleCount; i++) {
@@ -946,7 +988,7 @@
       message.className = "";
       terminal.classList.remove('success-state'); // Reset terminal state
       document.querySelector('h1').textContent = 'KAOSBOMBE'; // Reset title text
-      statusText.innerHTML = "⚠ KRITISK FARE ⚠<br>Legg inn riktig kode for å stoppe kaosbomben:"; // Reset status text
+      statusText.innerHTML = "⚠ KRITISK FARE ⚠<br><br>Legg inn riktig kode for å stoppe kaosbomben.<br><br>Bruk alle kodene du har fått og brukt før!"; // Reset status text
       
       // Restart tension loop
       clearInterval(tensionInterval);
