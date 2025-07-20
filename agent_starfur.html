@@ -439,31 +439,185 @@
           break;
           
         case 'error':
-          oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
-          oscillator.frequency.exponentialRampToValueAtTime(150, audioContext.currentTime + 0.3);
-          gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+          // Create a sinister multi-layered error sound
+          // Main low rumble
+          oscillator.frequency.setValueAtTime(80, audioContext.currentTime);
+          oscillator.frequency.exponentialRampToValueAtTime(60, audioContext.currentTime + 1.2);
+          gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1.2);
           oscillator.type = 'sawtooth';
-          duration = 0.3;
+          duration = 1.2;
+          
+          // Add dissonant high frequency screech
+          setTimeout(() => {
+            const screechOsc = audioContext.createOscillator();
+            const screechGain = audioContext.createGain();
+            screechOsc.connect(screechGain);
+            screechGain.connect(audioContext.destination);
+            
+            screechOsc.frequency.setValueAtTime(1200, audioContext.currentTime);
+            screechOsc.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + 0.8);
+            screechGain.gain.setValueAtTime(0.25, audioContext.currentTime);
+            screechGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
+            screechOsc.type = 'square';
+            
+            screechOsc.start(audioContext.currentTime);
+            screechOsc.stop(audioContext.currentTime + 0.8);
+          }, 100);
+          
+          // Add disturbing warble effect
+          setTimeout(() => {
+            const warbleOsc = audioContext.createOscillator();
+            const warbleGain = audioContext.createGain();
+            const warbleLFO = audioContext.createOscillator();
+            const warbleLFOGain = audioContext.createGain();
+            
+            warbleOsc.connect(warbleGain);
+            warbleGain.connect(audioContext.destination);
+            warbleLFO.connect(warbleLFOGain);
+            warbleLFOGain.connect(warbleOsc.frequency);
+            
+            warbleOsc.frequency.setValueAtTime(300, audioContext.currentTime);
+            warbleLFO.frequency.setValueAtTime(6.66, audioContext.currentTime); // Sinister frequency
+            warbleLFOGain.gain.setValueAtTime(50, audioContext.currentTime);
+            warbleGain.gain.setValueAtTime(0.3, audioContext.currentTime);
+            warbleGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1.0);
+            warbleOsc.type = 'triangle';
+            warbleLFO.type = 'sine';
+            
+            warbleLFO.start(audioContext.currentTime);
+            warbleOsc.start(audioContext.currentTime);
+            warbleLFO.stop(audioContext.currentTime + 1.0);
+            warbleOsc.stop(audioContext.currentTime + 1.0);
+          }, 200);
+          
+          // Add random glitchy pops
+          for(let i = 0; i < 8; i++) {
+            setTimeout(() => {
+              const popOsc = audioContext.createOscillator();
+              const popGain = audioContext.createGain();
+              popOsc.connect(popGain);
+              popGain.connect(audioContext.destination);
+              
+              popOsc.frequency.setValueAtTime(Math.random() * 800 + 200, audioContext.currentTime);
+              popGain.gain.setValueAtTime(0.15, audioContext.currentTime);
+              popGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+              popOsc.type = 'square';
+              
+              popOsc.start(audioContext.currentTime);
+              popOsc.stop(audioContext.currentTime + 0.05);
+            }, Math.random() * 800 + 300);
+          }
           break;
           
         case 'success':
-          // Create a chord for success
-          const frequencies = [523.25, 659.25, 783.99]; // C, E, G
-          frequencies.forEach((freq, index) => {
-            const osc = audioContext.createOscillator();
-            const gain = audioContext.createGain();
-            osc.connect(gain);
-            gain.connect(audioContext.destination);
-            
-            osc.frequency.setValueAtTime(freq, audioContext.currentTime);
-            gain.gain.setValueAtTime(0.1, audioContext.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
-            osc.type = 'sine';
-            
-            osc.start(audioContext.currentTime + index * 0.1);
-            osc.stop(audioContext.currentTime + 1 + index * 0.1);
+          // Create a magnificent celebratory success sound
+          
+          // Main triumphant chord progression: C Major -> F Major -> G Major -> C Major
+          const chordProgression = [
+            [523.25, 659.25, 783.99, 1046.50], // C, E, G, C (C Major)
+            [698.46, 880.00, 1046.50, 1318.51], // F, A, C, E (F Major)
+            [783.99, 987.77, 1174.66, 1567.98], // G, B, D, G (G Major)
+            [1046.50, 1318.51, 1567.98, 2093.00] // C, E, G, C (C Major octave up)
+          ];
+          
+          chordProgression.forEach((chord, chordIndex) => {
+            chord.forEach((freq, noteIndex) => {
+              const osc = audioContext.createOscillator();
+              const gain = audioContext.createGain();
+              osc.connect(gain);
+              gain.connect(audioContext.destination);
+              
+              osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+              gain.gain.setValueAtTime(0.08, audioContext.currentTime + chordIndex * 0.4);
+              gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + chordIndex * 0.4 + 0.8);
+              osc.type = 'sine';
+              
+              osc.start(audioContext.currentTime + chordIndex * 0.4);
+              osc.stop(audioContext.currentTime + chordIndex * 0.4 + 0.8);
+            });
           });
+          
+          // Add sparkly high frequency bells for magical effect
+          const bellFreqs = [2093, 2637, 3136, 3729, 4186]; // High C, E, G, B, C
+          bellFreqs.forEach((freq, index) => {
+            setTimeout(() => {
+              const bellOsc = audioContext.createOscillator();
+              const bellGain = audioContext.createGain();
+              bellOsc.connect(bellGain);
+              bellGain.connect(audioContext.destination);
+              
+              bellOsc.frequency.setValueAtTime(freq, audioContext.currentTime);
+              bellGain.gain.setValueAtTime(0.12, audioContext.currentTime);
+              bellGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1.5);
+              bellOsc.type = 'triangle';
+              
+              bellOsc.start(audioContext.currentTime);
+              bellOsc.stop(audioContext.currentTime + 1.5);
+            }, index * 150 + 500);
+          });
+          
+          // Add ascending arpeggio for triumphant flourish
+          const arpeggioNotes = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98, 2093.00];
+          arpeggioNotes.forEach((freq, index) => {
+            setTimeout(() => {
+              const arpOsc = audioContext.createOscillator();
+              const arpGain = audioContext.createGain();
+              arpOsc.connect(arpGain);
+              arpGain.connect(audioContext.destination);
+              
+              arpOsc.frequency.setValueAtTime(freq, audioContext.currentTime);
+              arpGain.gain.setValueAtTime(0.15, audioContext.currentTime);
+              arpGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+              arpOsc.type = 'sine';
+              
+              arpOsc.start(audioContext.currentTime);
+              arpOsc.stop(audioContext.currentTime + 0.3);
+            }, index * 80 + 1800);
+          });
+          
+          // Add warm bass foundation
+          setTimeout(() => {
+            const bassOsc = audioContext.createOscillator();
+            const bassGain = audioContext.createGain();
+            bassOsc.connect(bassGain);
+            bassGain.connect(audioContext.destination);
+            
+            bassOsc.frequency.setValueAtTime(130.81, audioContext.currentTime); // Low C
+            bassGain.gain.setValueAtTime(0.2, audioContext.currentTime);
+            bassGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 2.5);
+            bassOsc.type = 'sine';
+            
+            bassOsc.start(audioContext.currentTime);
+            bassOsc.stop(audioContext.currentTime + 2.5);
+          }, 0);
+          
+          // Add gentle tremolo effect for warmth
+          setTimeout(() => {
+            const tremoloOsc = audioContext.createOscillator();
+            const tremoloGain = audioContext.createGain();
+            const tremoloLFO = audioContext.createOscillator();
+            const tremoloLFOGain = audioContext.createGain();
+            
+            tremoloOsc.connect(tremoloGain);
+            tremoloGain.connect(audioContext.destination);
+            tremoloLFO.connect(tremoloLFOGain);
+            tremoloLFOGain.connect(tremoloGain.gain);
+            
+            tremoloOsc.frequency.setValueAtTime(1046.50, audioContext.currentTime); // High C
+            tremoloLFO.frequency.setValueAtTime(4, audioContext.currentTime); // Gentle tremolo
+            tremoloLFOGain.gain.setValueAtTime(0.03, audioContext.currentTime);
+            tremoloGain.gain.setValueAtTime(0.1, audioContext.currentTime);
+            tremoloGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 3);
+            tremoloOsc.type = 'sine';
+            tremoloLFO.type = 'sine';
+            
+            tremoloLFO.start(audioContext.currentTime);
+            tremoloOsc.start(audioContext.currentTime);
+            tremoloLFO.stop(audioContext.currentTime + 3);
+            tremoloOsc.stop(audioContext.currentTime + 3);
+          }, 1000);
+          
           return; // Skip the main oscillator for success
           
         case 'glitch':
